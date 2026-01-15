@@ -5,7 +5,7 @@
   "identifier": "com.freddygarcia.lazypass",
   "build": {
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://192.168.1.151:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../build"
   },
