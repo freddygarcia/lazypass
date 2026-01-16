@@ -6,9 +6,9 @@ use zeroize::Zeroize;
 
 // Parameters for Argon2. Salt is now read from environment variable SALT_PHRASE.
 const MEMORY_COST: u32 = 1024 * 1024;
-const ITERATIONS: u32 = 3;
+const ITERATIONS: u32 = 2;
 const PARALLELISM: u32 = 2;
-const HASH_LENGTH: usize = 32;
+const HASH_LENGTH: usize = 64;
 
 /// Obfuscated salt storage to prevent simple memory inspection.
 /// The salt is XOR'd with a runtime-generated key and stored in a SecretString.
