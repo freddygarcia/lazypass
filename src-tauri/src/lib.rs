@@ -5,7 +5,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 const MEMORY_COST: u32 = 512 * 1024;
 const ITERATIONS: u32 = 2;
 const PARALLELISM: u32 = 2;
-const HASH_LENGTH: usize = 64;
+const HASH_LENGTH: usize = 32;
 
 #[tauri::command]
 async fn generate_hash(password: String) -> Result<String, String> {
@@ -46,7 +46,7 @@ async fn secure_copy(app: tauri::AppHandle, text: String) -> Result<(), String> 
     // Spawn a background task to clear the clipboard after 10 seconds
 
     // first, create a 10 seconds const
-    const CLIPBOARD_CLEAR_DURATION: std::time::Duration = std::time::Duration::from_secs(5);
+    const CLIPBOARD_CLEAR_DURATION: std::time::Duration = std::time::Duration::from_secs(10);
 
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(CLIPBOARD_CLEAR_DURATION).await;

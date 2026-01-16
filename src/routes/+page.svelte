@@ -38,7 +38,7 @@
 
     function startCountdown() {
         if (timer) clearInterval(timer);
-        countdown = 5;
+        countdown = 10;
         timer = setInterval(() => {
             countdown--;
             if (countdown <= 0) {
