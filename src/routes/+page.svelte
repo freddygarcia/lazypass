@@ -43,9 +43,7 @@
         timer = setInterval(() => {
             countdown--;
             if (countdown <= 0) {
-                clearInterval(timer);
-                copying = false;
-                hash = "";
+                resetApp();
             }
         }, 1000);
     }
