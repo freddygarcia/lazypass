@@ -135,6 +135,11 @@ async fn secure_copy(app: tauri::AppHandle, text: String) -> Result<(), String> 
     Ok(())
 }
 
+#[tauri::command]
+fn get_build_info() -> String {
+    format!("{} ({})", env!("BUILD_HASH"), env!("BUILD_DATE"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenvy::dotenv().ok();
@@ -175,7 +180,7 @@ pub fn run() {
     }
 
     builder
-        .invoke_handler(tauri::generate_handler![generate_hash, secure_copy])
+        .invoke_handler(tauri::generate_handler![generate_hash, secure_copy, get_build_info])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

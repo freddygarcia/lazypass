@@ -13,6 +13,7 @@
     let revealHash = $state(false);
     let copying = $state(false);
     let showPassword = $state(false);
+    let buildHash = $state("");
 
     async function generateHash() {
         if (!password || loading) {
@@ -103,8 +104,18 @@
         }
     }
 
+    async function fetchBuildInfo() {
+        try {
+            buildHash = await invoke("get_build_info");
+        } catch (e) {
+            console.error("Failed to fetch build info:", e);
+            buildHash = "unknown";
+        }
+    }
+
     onMount(() => {
         checkAuth();
+        fetchBuildInfo();
     });
 </script>
 
@@ -134,6 +145,9 @@
             <header>
                 <h1>LazyPass</h1>
                 <p class="subtitle">Personal Token Generator</p>
+                {#if buildHash}
+                    <span class="build-version">Build: {buildHash}</span>
+                {/if}
             </header>
 
             <div class="input-group">
@@ -559,6 +573,16 @@
         text-transform: uppercase;
         letter-spacing: 2px;
         font-weight: 600;
+    }
+
+    .build-version {
+        display: block;
+        font-size: 0.65rem;
+        color: var(--text-secondary);
+        opacity: 0.5;
+        margin-top: 0.5rem;
+        font-family: "SF Mono", "Fira Code", monospace;
+        letter-spacing: 0.5px;
     }
 
     .input-group {

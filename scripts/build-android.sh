@@ -29,6 +29,10 @@ cd "$PROJECT_DIR"
 
 # Step 1: Build the release APK
 echo -e "\n${YELLOW}[1/4]${NC} Building release APK..."
+
+export BUILD_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+export BUILD_DATE=$(date "+%Y-%m-%d %H:%M:%S")
+
 pnpm tauri android build
 
 if [ ! -f "$APK_DIR/app-universal-release-unsigned.apk" ]; then
