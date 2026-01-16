@@ -2,8 +2,8 @@ use argon2::{Argon2, Params, Version};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
 // Parameters for Argon2. Salt is now read from environment variable SALT_PHRASE.
-const MEMORY_COST: u32 = 512 * 1024;
-const ITERATIONS: u32 = 2;
+const MEMORY_COST: u32 = 1024 * 1024;
+const ITERATIONS: u32 = 3;
 const PARALLELISM: u32 = 2;
 const HASH_LENGTH: usize = 32;
 

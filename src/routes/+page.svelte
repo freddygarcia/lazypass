@@ -133,7 +133,7 @@
             </button>
             <header>
                 <h1>LazyPass</h1>
-                <p class="subtitle">Proprietary Argon2id Token Generator</p>
+                <p class="subtitle">Personal Token Generator</p>
             </header>
 
             <div class="input-group">
