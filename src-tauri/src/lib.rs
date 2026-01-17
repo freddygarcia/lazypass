@@ -142,16 +142,16 @@ async fn secure_copy(app: tauri::AppHandle, text: String) -> Result<(), String> 
 #[tauri::command]
 async fn type_password(text: String) -> Result<(), String> {
     use enigo::{Enigo, Keyboard, Settings};
-    
+
     tauri::async_runtime::spawn_blocking(move || {
         let mut enigo = Enigo::new(&Settings::default())
             .map_err(|e| format!("Failed to initialize keyboard input: {}", e))?;
-        
+
         // Type the text character by character
         enigo
             .text(&text)
             .map_err(|e| format!("Failed to type password: {}", e))?;
-        
+
         Ok(())
     })
     .await
@@ -223,6 +223,11 @@ pub fn run() {
     }
 
     builder
+        .invoke_handler(tauri::generate_handler![
+            generate_hash,
+            secure_copy,
+            get_build_info
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
