@@ -135,6 +135,29 @@ async fn secure_copy(app: tauri::AppHandle, text: String) -> Result<(), String> 
     Ok(())
 }
 
+/// Types a password using simulated keyboard input.
+/// This is more secure than clipboard as it doesn't expose the password to other applications.
+/// Only available on desktop platforms.
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[tauri::command]
+async fn type_password(text: String) -> Result<(), String> {
+    use enigo::{Enigo, Keyboard, Settings};
+    
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut enigo = Enigo::new(&Settings::default())
+            .map_err(|e| format!("Failed to initialize keyboard input: {}", e))?;
+        
+        // Type the text character by character
+        enigo
+            .text(&text)
+            .map_err(|e| format!("Failed to type password: {}", e))?;
+        
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("Task Join Error: {}", e))?
+}
+
 #[tauri::command]
 fn get_build_info() -> String {
     format!("{} ({})", env!("BUILD_HASH"), env!("BUILD_DATE"))
@@ -170,7 +193,7 @@ pub fn run() {
         std::env::remove_var("SALT_PHRASE");
     }
 
-    let builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init());
 
@@ -179,8 +202,27 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_biometric::init());
     }
 
+    // Register handlers - desktop includes type_password, mobile does not
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.invoke_handler(tauri::generate_handler![
+            generate_hash,
+            secure_copy,
+            get_build_info,
+            type_password
+        ]);
+    }
+
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    {
+        builder = builder.invoke_handler(tauri::generate_handler![
+            generate_hash,
+            secure_copy,
+            get_build_info
+        ]);
+    }
+
     builder
-        .invoke_handler(tauri::generate_handler![generate_hash, secure_copy, get_build_info])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

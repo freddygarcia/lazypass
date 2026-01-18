@@ -21,9 +21,12 @@
     let error = $state("");
     let loading = $state(false);
     let copying = $state(false);
+    let typing = $state(false);
+    let typingCountdown = $state(0);
     let buildHash = $state("");
     let countdown = $state(0);
     let timer: ReturnType<typeof setInterval>;
+    let typingTimer: ReturnType<typeof setInterval>;
 
     /**
      * Resets the application to its initial state.
@@ -34,7 +37,10 @@
         error = "";
         loading = false;
         copying = false;
+        typing = false;
+        typingCountdown = 0;
         if (timer) clearInterval(timer);
+        if (typingTimer) clearInterval(typingTimer);
         countdown = 0;
     }
 
@@ -97,6 +103,35 @@
                 console.error("Fallback copy failed too.", e);
             }
         }
+    }
+
+    /**
+     * Types the password using simulated keyboard input.
+     * Gives user 3 seconds to focus on the target input field.
+     */
+    async function typePassword() {
+        if (!hash || typing) return;
+        
+        // Start countdown to give user time to focus on target field
+        typingCountdown = 3;
+        typing = true;
+        
+        typingTimer = setInterval(async () => {
+            typingCountdown--;
+            if (typingCountdown <= 0) {
+                clearInterval(typingTimer);
+                try {
+                    await invoke("type_password", { text: hash });
+                    password = "";
+                    // Reset after typing is complete
+                    setTimeout(() => resetApp(), 500);
+                } catch (err) {
+                    console.error("Failed to type password:", err);
+                    error = "Failed to type password. Make sure a text field is focused.";
+                    typing = false;
+                }
+            }
+        }, 1000);
     }
 
     /**
@@ -167,7 +202,10 @@
                     {hash}
                     {copying}
                     {countdown}
+                    {typing}
+                    {typingCountdown}
                     onCopy={copyToClipboard}
+                    onType={typePassword}
                 />
             {/if}
 

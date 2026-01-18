@@ -1,13 +1,16 @@
 <script lang="ts">
     /**
      * @component ResultArea
-     * @description Displays the generated hash and copy actions.
+     * @description Displays the generated hash and copy/type actions.
      * @prop {string} hash - The generated hash.
      * @prop {boolean} copying - Whether the hash has been copied.
      * @prop {number} countdown - Countdown timer value for clearing.
+     * @prop {boolean} typing - Whether typing mode is active.
+     * @prop {number} typingCountdown - Countdown before typing starts.
      * @prop {() => void} onCopy - Callback when copy button is clicked.
+     * @prop {() => void} onType - Callback when type button is clicked.
      */
-    let { hash, copying, countdown, onCopy } = $props();
+    let { hash, copying, countdown, typing, typingCountdown, onCopy, onType } = $props();
 
     let revealHash = $state(false);
 
@@ -69,7 +72,62 @@
                         ></circle></svg
                     >
                 {/if}
-            </button>
+        </button>
+            <div class="type-wrapper">
+                {#if typing}
+                    <div class="type-badge">
+                        Typing in {typingCountdown}s
+                    </div>
+                {/if}
+                <button
+                    class="type-btn"
+                    onclick={onType}
+                    aria-label="Type password"
+                    class:active={typing}
+                    disabled={copying || typing}
+                >
+                    {#if typing}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="spinner"
+                            ><circle cx="12" cy="12" r="10"
+                            ></circle><polyline points="12 6 12 12 16 14"
+                            ></polyline></svg
+                        >
+                    {:else}
+                        <!-- Keyboard icon -->
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            ><rect x="2" y="4" width="20" height="16" rx="2" ry="2"
+                            ></rect><path d="M6 8h.001"
+                            ></path><path d="M10 8h.001"
+                            ></path><path d="M14 8h.001"
+                            ></path><path d="M18 8h.001"
+                            ></path><path d="M8 12h.001"
+                            ></path><path d="M12 12h.001"
+                            ></path><path d="M16 12h.001"
+                            ></path><path d="M7 16h10"
+                            ></path></svg
+                        >
+                    {/if}
+                </button>
+            </div>
             <div class="copy-wrapper">
                 {#if copying}
                     <div class="copy-badge">
@@ -81,6 +139,7 @@
                     onclick={onCopy}
                     aria-label="Copy hash"
                     class:success={copying}
+                    disabled={typing}
                 >
                     {#if copying}
                         <svg
@@ -296,10 +355,107 @@
         color: white;
     }
 
-    .copy-btn:hover {
+    .copy-btn:hover:not(:disabled) {
         background: var(--accent-color);
         color: white;
         border-color: var(--accent-color);
         transform: scale(1.05);
+    }
+
+    .copy-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Type button styles */
+    .type-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .type-badge {
+        position: absolute;
+        top: -45px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+        animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+            forwards;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .type-badge::after {
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid #8b5cf6;
+    }
+
+    .type-btn {
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #a78bfa;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .type-btn.active {
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        border-color: #8b5cf6;
+        color: white;
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    .type-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: white;
+        border-color: #8b5cf6;
+        transform: scale(1.05);
+    }
+
+    .type-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(139, 92, 246, 0);
+        }
+    }
+
+    .spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
