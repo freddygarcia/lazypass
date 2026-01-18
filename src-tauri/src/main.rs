@@ -2,5 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    lazypass_lib::run()
+    // Force X11 backend on Linux to prevent Wayland issues
+    #[cfg(target_os = "linux")]
+    std::env::set_var("GDK_BACKEND", "x11");
+
+    lazypass_lib::run();
 }
