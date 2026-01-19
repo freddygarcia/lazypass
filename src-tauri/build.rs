@@ -1,7 +1,15 @@
 fn main() {
     let _ = dotenvy::dotenv();
-    if let Ok(salt) = std::env::var("SALT_PHRASE") {
-        println!("cargo:rustc-env=SALT_PHRASE={}", salt);
+    match std::env::var("SALT_PHRASE") {
+        Ok(salt) if salt.is_empty() => {
+            panic!("SALT_PHRASE environment variable is set but empty. Please provide a non-empty salt phrase.");
+        }
+        Ok(salt) => {
+            println!("cargo:rustc-env=SALT_PHRASE={}", salt);
+        }
+        Err(_) => {
+            panic!("SALT_PHRASE environment variable is not set. Please set it in your .env file or environment.");
+        }
     }
 
     // Read build hash from environment variable (set by CI or manually)
