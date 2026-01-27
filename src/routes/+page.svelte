@@ -1,19 +1,13 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { authenticate } from "@tauri-apps/plugin-biometric";
     import { onMount } from "svelte";
 
     import AppHeader from "$lib/components/AppHeader.svelte";
-    import AuthCard from "$lib/components/AuthCard.svelte";
     import PasswordInput from "$lib/components/PasswordInput.svelte";
     import GenerateButton from "$lib/components/GenerateButton.svelte";
     import ProcessingOverlay from "$lib/components/ProcessingOverlay.svelte";
     import ResetButton from "$lib/components/ResetButton.svelte";
     import ResultArea from "$lib/components/ResultArea.svelte";
-
-    // Authentication State
-    let isAuthenticated = $state(false);
-    let authError = $state("");
 
     // Application State
     let password = $state("");
@@ -111,11 +105,11 @@
      */
     async function typePassword() {
         if (!hash || typing) return;
-        
+
         // Start countdown to give user time to focus on target field
         typingCountdown = 3;
         typing = true;
-        
+
         typingTimer = setInterval(async () => {
             typingCountdown--;
             if (typingCountdown <= 0) {
@@ -127,33 +121,12 @@
                     setTimeout(() => resetApp(), 500);
                 } catch (err) {
                     console.error("Failed to type password:", err);
-                    error = "Failed to type password. Make sure a text field is focused.";
+                    error =
+                        "Failed to type password. Make sure a text field is focused.";
                     typing = false;
                 }
             }
         }, 1000);
-    }
-
-    /**
-     * Checks biometric authentication.
-     */
-    async function checkAuth() {
-        // Check if we're on a mobile platform
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-        if (!isMobile) {
-            isAuthenticated = true;
-            return;
-        }
-
-        try {
-            await authenticate("Unlock LazyPass");
-            isAuthenticated = true;
-            authError = "";
-        } catch (e) {
-            console.error(e);
-            authError = "Authentication failed. Please try again.";
-        }
     }
 
     /**
@@ -169,53 +142,46 @@
     }
 
     onMount(() => {
-        checkAuth();
         fetchBuildInfo();
     });
 </script>
 
-{#if isAuthenticated}
-    <main class="container">
-        <div class="card">
-            <ResetButton onclick={resetApp} />
+<main class="container">
+    <div class="card">
+        <ResetButton onclick={resetApp} />
 
-            <AppHeader {buildHash} />
+        <AppHeader {buildHash} />
 
-            <PasswordInput
-                bind:value={password}
-                disabled={loading}
-                onSubmit={generateHash}
+        <PasswordInput
+            bind:value={password}
+            disabled={loading}
+            onSubmit={generateHash}
+        />
+
+        <GenerateButton
+            {loading}
+            disabled={!password || loading}
+            onclick={generateHash}
+        />
+
+        {#if loading}
+            <ProcessingOverlay />
+        {/if}
+
+        {#if hash && !loading}
+            <ResultArea
+                {hash}
+                {copying}
+                {countdown}
+                {typing}
+                {typingCountdown}
+                onCopy={copyToClipboard}
+                onType={typePassword}
             />
+        {/if}
 
-            <GenerateButton
-                {loading}
-                disabled={!password || loading}
-                onclick={generateHash}
-            />
-
-            {#if loading}
-                <ProcessingOverlay />
-            {/if}
-
-            {#if hash && !loading}
-                <ResultArea
-                    {hash}
-                    {copying}
-                    {countdown}
-                    {typing}
-                    {typingCountdown}
-                    onCopy={copyToClipboard}
-                    onType={typePassword}
-                />
-            {/if}
-
-            {#if error}
-                <p class="error">{error}</p>
-            {/if}
-        </div>
-    </main>
-{:else}
-    <main class="container">
-        <AuthCard {authError} onAuthenticate={checkAuth} />
-    </main>
-{/if}
+        {#if error}
+            <p class="error">{error}</p>
+        {/if}
+    </div>
+</main>

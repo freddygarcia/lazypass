@@ -12,7 +12,6 @@
     "permissions": [
         "core:default",
         "opener:default",
-        "clipboard-manager:default",
-        "biometric:default"
+        "clipboard-manager:default"
     ]
 }

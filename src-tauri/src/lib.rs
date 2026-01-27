@@ -197,11 +197,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init());
 
-    #[cfg(mobile)]
-    {
-        builder = builder.plugin(tauri_plugin_biometric::init());
-    }
-
     // Register handlers - desktop includes type_password, mobile does not
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
